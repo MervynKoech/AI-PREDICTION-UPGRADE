@@ -12,7 +12,7 @@ warnings.filterwarnings('ignore')
 st.set_page_config(page_title="CardioAI - Advanced Heart Disease Prediction", page_icon="❤️", layout="wide", initial_sidebar_state="expanded")
 
 # ============================================================================
-# 🎨 PROFESSIONAL CUSTOM CSS - MAKES IT LOOK STUNNING
+# 🎨 PROFESSIONAL CUSTOM CSS - FIXED COLOR CONTRAST
 # ============================================================================
 st.markdown("""
 <style>
@@ -45,24 +45,14 @@ st.markdown("""
     }
     
     .main-header p {
-        color: rgba(255,255,255,0.9);
+        color: rgba(255,255,255,0.95) !important;
         font-size: 1.1rem;
         margin-top: 0.5rem;
     }
     
-    /* Card Styling */
-    .css-1r6slb0 {
-        background: white;
-        border-radius: 15px;
-        padding: 1.5rem;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-        border: 1px solid rgba(0,0,0,0.05);
-        transition: all 0.3s ease;
-    }
-    
-    .css-1r6slb0:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+    /* Card Styling - FIXED TEXT COLOR */
+    .css-1r6slb0, .stMarkdown, div[data-testid="stMarkdownContainer"] {
+        color: #2d3748 !important;
     }
     
     /* Metric Cards */
@@ -139,6 +129,7 @@ st.markdown("""
         border-radius: 10px;
         margin: 1rem 0;
         box-shadow: 0 4px 15px rgba(72, 187, 120, 0.2);
+        color: #22543d !important;
     }
     
     .warning-box {
@@ -148,6 +139,7 @@ st.markdown("""
         border-radius: 10px;
         margin: 1rem 0;
         box-shadow: 0 4px 15px rgba(237, 137, 54, 0.2);
+        color: #744210 !important;
     }
     
     .error-box {
@@ -157,9 +149,10 @@ st.markdown("""
         border-radius: 10px;
         margin: 1rem 0;
         box-shadow: 0 4px 15px rgba(245, 101, 101, 0.2);
+        color: #742a2a !important;
     }
     
-    /* Info Cards */
+    /* Info Cards - FIXED TEXT COLOR */
     .info-card {
         background: white;
         border-radius: 12px;
@@ -168,6 +161,17 @@ st.markdown("""
         box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         border-left: 4px solid #667eea;
         transition: all 0.3s ease;
+        color: #2d3748 !important;
+    }
+    
+    .info-card h3 {
+        color: #667eea !important;
+        margin-top: 0 !important;
+    }
+    
+    .info-card p {
+        color: #4a5568 !important;
+        margin: 0.5rem 0 !important;
     }
     
     .info-card:hover {
@@ -177,7 +181,7 @@ st.markdown("""
     
     /* Section Headers */
     .section-title {
-        color: #2d3748;
+        color: #2d3748 !important;
         font-family: 'Poppins', sans-serif;
         font-size: 2rem;
         font-weight: 700;
@@ -194,6 +198,11 @@ st.markdown("""
         margin: 0.5rem 0;
         box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         border-left: 3px solid #48bb78;
+        color: #2d3748 !important;
+    }
+    
+    .feature-item strong {
+        color: #667eea !important;
     }
     
     /* Hide Streamlit Branding */
@@ -216,6 +225,15 @@ st.markdown("""
     
     ::-webkit-scrollbar-thumb:hover {
         background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    }
+    
+    /* Text visibility fixes */
+    h1, h2, h3, h4, h5, h6 {
+        color: #2d3748 !important;
+    }
+    
+    p, li, span, div {
+        color: #2d3748 !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -456,14 +474,14 @@ elif "🩺 New Patient Prediction" in page:
         
         with col1:
             if pred_class == 1:
-                st.markdown(f"""
+                st.markdown("""
                 <div class='error-box'>
                     <h3 style='margin-top: 0;'>🚨 Predicted Diagnosis</h3>
                     <h2 style='color: #f56565; margin: 0;'>Heart Disease Detected</h2>
                 </div>
                 """, unsafe_allow_html=True)
             else:
-                st.markdown(f"""
+                st.markdown("""
                 <div class='success-box'>
                     <h3 style='margin-top: 0;'>✅ Predicted Diagnosis</h3>
                     <h2 style='color: #48bb78; margin: 0;'>No Heart Disease</h2>
@@ -542,7 +560,13 @@ elif "🔍 Explainable AI (XAI)" in page:
         else:
             base_val = explainer.expected_value
         
-        shap_exp = shap.Explanation(values=shap_values[0], base_values=float(base_val), data=input_trans[0], feature_names=feature_names)
+        # Safely convert base_val to scalar
+        if isinstance(base_val, np.ndarray):
+            base_val_scalar = float(base_val.flatten()[0])
+        else:
+            base_val_scalar = float(base_val)
+            
+        shap_exp = shap.Explanation(values=shap_values[0], base_values=base_val_scalar, data=input_trans[0], feature_names=feature_names)
         
         fig, ax = plt.subplots(figsize=(12, 8))
         shap.plots.waterfall(shap_exp, max_display=10, show=False)
@@ -611,7 +635,7 @@ elif "📖 Dataset & Features" in page:
         "ExAng": {"desc": "Exercise-induced angina", "relevance": "Suggests ischemia during exertion", "icon": "🏃"},
         "Oldpeak": {"desc": "ST depression by exercise", "relevance": "Marker of myocardial ischemia", "icon": "📉"},
         "Slope": {"desc": "Peak exercise ST slope", "relevance": "Downsloping = higher risk", "icon": "📐"},
-        "Ca": {"desc": "Number of major vessels (0-3)", "relevance": "More vessels = more severe disease", "icon": ""},
+        "Ca": {"desc": "Number of major vessels (0-3)", "relevance": "More vessels = more severe disease", "icon": "🫀"},
         "Thal": {"desc": "Thalassemia stress test", "relevance": "Defects indicate ischemia", "icon": "🧬"}
     }
     
